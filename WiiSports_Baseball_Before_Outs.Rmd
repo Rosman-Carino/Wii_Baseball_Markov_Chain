@@ -104,8 +104,31 @@ This function will return a list that will contain the row and col index values 
 we can index into the baseball matrix (24 x 24) when iterating through the 
 dataframe on the next cell.
 This function will handle all the events where there are no runners on base
+```{r}
+no_runners_on <- function(outs, event) {
+  # Event For Homerun
+  from_index = 1 + (8 * outs)
+  # Event For Single
+  if (event == 20) {
+    return (c(from_index, from_index + 1))
+  }
+  # Event For Double
+  if (event == 21) {
+    return (c(from_index, from_index + 2))
+  }
+  # Event For Triple
+  if (event == 22) {
+    return (c(from_index, from_index + 3))
+  }
+  # Event For Homerun
+  if (event == 23) {
+    return (c(from_index, from_index))
+  }
+  
+}
+```
 
-
+Refactoring Code Above to Include Outs
 ```{r}
 no_runners_on <- function(outs, event, outs_on_play) {
   # Event For Homerun
@@ -139,12 +162,34 @@ no_runners_on <- function(outs, event, outs_on_play) {
   return(c(0, 0))
 }
 ```
+
+Testing Helper Functions
+```{r}
+for (j in 0:2) {
+  print(j)
+  # Runner on First
+  print(no_runners_on(j, 20, 0))
+  print(no_runners_on(j, 21, 0))
+  print(no_runners_on(j, 22, 0))
+  print(no_runners_on(j, 23, 0))
+  
+  # No Runners on 
+  print("Outs")
+  print(no_runners_on(j, 2, 0))
+  print(no_runners_on(j, 3, 0))
+  print(no_runners_on(j, 2, 1))
+  print(no_runners_on(j, 3, 1))
+
+  
+}
+
+```
 This function will return a list that will contain the row and col index values so
 we can index into the baseball matrix (24 x 24) when iterating through the 
 dataframe on the next cell.
 This function will handle all the events where there are runners on first base
 ```{r}
-runner_on_first <- function(outs, event, outs_on_play) {
+runner_on_first <- function(outs, event) {
   # Event For Homerun
   from_index = 2 + (8 * outs)
   # Event For Single
@@ -163,19 +208,12 @@ runner_on_first <- function(outs, event, outs_on_play) {
   if (event == 23) {
     return (c(from_index, from_index - 1))
   }
-  # 0 Outs -> 1 Out
-  if (event == 2 || event == 3 && outs == 0 && outs_on_play == 1) {
-    return(c(from_index, from_index + 8))
-  }
-  # 1 Out -> 2 Outs
-  if (event == 2 || event == 3 && outs == 1 && outs_on_play == 1) {
-    return(c(from_index, from_index + 8))
-  }
-  # Will Hanlde 2 Outs -> 3 Outs Later 
-  #Edge Case -> There are Outs_on_Play = 0 Just Return [0, 0]
-  return(c(0, 0))
 }
 ```
+
+Refactoring Code Above to Include Outs
+
+
 
 
 This function will return a list that will contain the row and col index values so
@@ -184,7 +222,7 @@ dataframe on the next cell.
 This function will handle all the events where there are runners on second base
 
 ```{r}
-runner_on_second <- function(outs, event, outs_on_play) {
+runner_on_second <- function(outs, event) {
   from_index = 3 + (8 * outs)
   # Event For Single
   if (event == 20) {
@@ -202,28 +240,27 @@ runner_on_second <- function(outs, event, outs_on_play) {
   if (event == 23) {
     return (c(from_index, from_index - 2))
   }
-  # 0 Outs -> 1 Out
-  if (event == 2 || event == 3 && outs == 0 && outs_on_play == 1) {
-    return(c(from_index, from_index + 8))
-  }
-  # 1 Out -> 2 Outs
-  if (event == 2 || event == 3 && outs == 1 && outs_on_play == 1) {
-    return(c(from_index, from_index + 8))
-  }
-  # Will Hanlde 2 Outs -> 3 Outs Later 
-  #Edge Case -> There are Outs_on_Play = 0 Just Return [0, 0]
-  return(c(0, 0))
 }
 ```
 
-
-
+Testing Helper Function
+```{r}
+for (j in 0:2) {
+  # Runner on First
+  print(runner_on_third(j, 20))
+  print(runner_on_third(j, 21))
+  print(runner_on_third(j, 22))
+  print(runner_on_third(j, 23))
+  
+  
+}
+```
 This function will return a list that will contain the row and col index values so
 we can index into the baseball matrix (24 x 24) when iterating through the 
 dataframe on the next cell.
 This function will handle all the events where there are runners on third base
 ```{r}
-runner_on_third <- function(outs, event, outs_on_play) {
+runner_on_third <- function(outs, event) {
   from_index = 4 + (8 * outs)
   # Event For Single
   if (event == 20) {
@@ -241,54 +278,59 @@ runner_on_third <- function(outs, event, outs_on_play) {
   if (event == 23) {
     return (c(from_index, from_index - 3))
   }
-  # 0 Outs -> 1 Out
-  if (event == 2 || event == 3 && outs == 0 && outs_on_play == 1) {
-    return(c(from_index, from_index + 8))
-  }
-  # 1 Out -> 2 Outs
-  if (event == 2 || event == 3 && outs == 1 && outs_on_play == 1) {
-    return(c(from_index, from_index + 8))
-  }
-  # Will Hanlde 2 Outs -> 3 Outs Later 
-  #Edge Case -> There are Outs_on_Play = 0 Just Return [0, 0]
-  return(c(0, 0))
 }
 ```
 
-Testing Helper Function
-```{r}
-for (j in 0:2) {
-  print(j)
-  # Runner on First
-  print(runner_on_third(j, 20, 0))
-  print(runner_on_third(j, 21, 0))
-  print(runner_on_third(j, 22, 0))
-  print(runner_on_third(j, 23, 0))
-  
-  # No Runners on 
-  print("Outs")
-  print(runner_on_third(j, 2, 1))
-  print(runner_on_third(j, 3, 1))
-  print(runner_on_third(j, 2, 1))
-  print(runner_on_third(j, 3, 1))
-}
-```
 This function will return a list that will contain the row and col index values so
 we can index into the baseball matrix (24 x 24) when iterating through the 
 dataframe on the next cell.
-This function will handle all the events where there are runners on first
-and second base
+This function will handle all the events where there are no runners and outs
+are recorded
+```{r}
+no_runners_on_out <- function(outs, event) {
+  from_index = 4 + (8 * outs)
+  # Event For Single
+  if (event == 20) {
+    return (c(from_index, from_index - 2))
+  }
+  # Event For Double
+  if (event == 21) {
+    return (c(from_index, from_index - 1))
+  }
+  # Event For Triple
+  if (event == 22) {
+    return (c(from_index, from_index))
+  }
+  # Event For Homerun
+  if (event == 23) {
+    return (c(from_index, from_index - 3))
+  }
+}
+```
 
 
-Populate Baseball Matrix
+
+
+
+
+```{r}
+for (j in 0:2) {
+  # Runner on First
+  print(runner_on_third(j, 20))
+  print(runner_on_third(j, 21))
+  print(runner_on_third(j, 22))
+  print(runner_on_third(j, 23))
+  
+}
+```
+
 ```{r}
 for (i in 1:nrow(dodgers_2023)) {
   # No Runners on Base
   if (dodgers_2023$first_runner[i] == ''
       && dodgers_2023$second_runner[i] == ''
       && dodgers_2023$third_runner[i] == '') {
-    row_col = no_runners_on(dodgers_2023$outs[i], dodgers_2023$event_type[i], 
-                            dodgers_2023$outs_on_play[i])
+    row_col = no_runners_on(dodgers_2023$outs[i], dodgers_2023$event_type[i], dodgers_2023$outs_on_play[i])
     row = row_col[1]
     col = row_col[2]
     if (row != 0 && col != 0 && row <= nrow(baseball_matrix) && col <= ncol(baseball_matrix)) {      
@@ -299,38 +341,41 @@ for (i in 1:nrow(dodgers_2023)) {
   if (dodgers_2023$first_runner[i] != ''
       && dodgers_2023$second_runner[i] == ''
       && dodgers_2023$third_runner[i] == '') {
-    row_col = runner_on_first(dodgers_2023$outs[i], dodgers_2023$event_type[i],
-                              dodgers_2023$outs_on_play[i])
+    row_col = runner_on_first(dodgers_2023$outs[i], dodgers_2023$event_type[i])
     row = row_col[1]
     col = row_col[2]
-    if (row != 0 && col != 0 && row <= nrow(baseball_matrix) && col <= ncol(baseball_matrix)) {      
-      baseball_matrix[row, col] <- baseball_matrix[row, col] + 1
-    }
+    baseball_matrix[row, col] <- baseball_matrix[row, col] + 1
   }
   # Runner on Second Base
   if (dodgers_2023$first_runner[i] == ''
       && dodgers_2023$second_runner[i] != ''
       && dodgers_2023$third_runner[i] == '') {
-    row_col = runner_on_second(dodgers_2023$outs[i], dodgers_2023$event_type[i],
-                               dodgers_2023$outs_on_play[i])
+    row_col = runner_on_second(dodgers_2023$outs[i], dodgers_2023$event_type[i])
     row = row_col[1]
     col = row_col[2]
-    if (row != 0 && col != 0 && row <= nrow(baseball_matrix) && col <= ncol(baseball_matrix)) {      
-      baseball_matrix[row, col] <- baseball_matrix[row, col] + 1
-    }
+    baseball_matrix[row, col] <- baseball_matrix[row, col] + 1
   }
   # Runner on Third
   if (dodgers_2023$first_runner[i] == ''
       && dodgers_2023$second_runner[i] == ''
       && dodgers_2023$third_runner[i] != '') {
-    row_col = runner_on_third(dodgers_2023$outs[i], dodgers_2023$event_type[i],
-                              dodgers_2023$outs_on_play[i])
+    row_col = runner_on_third(dodgers_2023$outs[i], dodgers_2023$event_type[i])
     row = row_col[1]
     col = row_col[2]
-    if (row != 0 && col != 0 && row <= nrow(baseball_matrix) && col <= ncol(baseball_matrix)) {      
-      baseball_matrix[row, col] <- baseball_matrix[row, col] + 1
-    }
+    baseball_matrix[row, col] <- baseball_matrix[row, col] + 1
   }
+  
+  
+  # No Runners On Base & An Out Occurs
+  
+  
+  # Runner on First Base and An Out Occurs
+  
+  # Runner on Second Base and An Out Occurs
+  
+  # Runner on Third Base And An Out Occurs
+  
+  # Runner on First and Second Base And An Out Occurs
 }
 
 
