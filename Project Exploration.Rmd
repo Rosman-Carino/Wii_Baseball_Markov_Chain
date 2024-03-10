@@ -1,0 +1,81 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+
+```{r}
+#in order to run this code, you will need to install these packages. You can do so by going to the install button, or by going to the console and typing, for example, install.packages("knitr")
+suppressPackageStartupMessages(library(knitr)) #makes pdfs
+suppressPackageStartupMessages(library(latex2exp))
+suppressPackageStartupMessages(library(tidyverse)) #good library for data manipulation, includes dplyr and ggplot
+suppressPackageStartupMessages(library(retrosheet))
+suppressPackageStartupMessages(library(Lahman))
+
+# you can read more about the tidyverse at: https://r4ds.had.co.nz/
+knitr::opts_chunk$set(echo = TRUE)
+#require(retrosheet)
+```
+
+The line below obtains all the the 
+```{r}
+rs2009 = getRetrosheet("", 2009)
+```
+
+Let's extract the first game of the season for the SF Giants
+```{r}
+first_game = rs2009[1]
+```
+
+
+
+## Data Exploration
+
+Let's look at the State Frequency:
+
+
+```{r}
+data("Batting")
+
+# Calculate the historical average of hits
+average_hits <- Batting %>%
+  group_by(yearID) %>%
+  summarise(average_hits = mean(H, na.rm = TRUE))  # Assuming 'H' represents hits in the dataset
+
+# Plotting the historical average of hits
+ggplot(average_hits, aes(x = yearID, y = average_hits)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Historical Average of Hits",
+       x = "Year",
+       y = "Average Hits")
+
+
+```
+
+
+```{r}
+values <- c(0.02, 0.06, 0.14, 0.47, 0.22, 0.66, 0.63, 0.9, 0.02, 0.07, 0.17, 0.49, 0.27, 0.6, 0.56, 0.83, 0.02, 0.08, 0.2, 0.24, 0.27, 0.32, 0.37, 0.59)
+
+# Number of rows and columns for your matrix
+num_rows <- 3
+num_cols <- 8
+
+
+# Create a matrix
+my_matrix <- matrix(values, nrow = num_rows, ncol = num_cols)
+
+# Display a heatmap
+heatmap(my_matrix, 
+        main = "Heatmap Example",
+        xlab = "Columns",
+        ylab = "Rows",
+        col = heat.colors(10),  # You can customize the color palette
+        scale = "none"          # You can adjust the scaling if needed
+)
+\
+```

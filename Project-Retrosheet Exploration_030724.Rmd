@@ -1,0 +1,230 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+#in order to run this code, you will need to install these packages. You can do so by going to the install button, or by going to the console and typing, for example, install.packages("knitr")
+suppressPackageStartupMessages(library(knitr)) #makes pdfs
+suppressPackageStartupMessages(library(latex2exp))
+suppressPackageStartupMessages(library(tidyverse)) #good library for data manipulation, includes dplyr and ggplot
+suppressPackageStartupMessages(library(retrosheet))
+suppressPackageStartupMessages(library(Lahman))
+
+# you can read more about the tidyverse at: https://r4ds.had.co.nz/
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+Read in CSV
+
+```{r}
+retro_sheet_column_names <- c(
+  "game_id", "visiting_team", "inning", "batting_team", "outs", "balls", 
+  "strikes", "pitch_sequence", "vis_score", "home_score", "batter", 
+  "batter_hand", "res_batter", "res_batter_hand", "pitcher", "pitcher_hand", 
+  "res_pitcher", "res_pitcher_hand", "catcher", "first_base", "second_base", 
+  "third_base", "shortstop", "left_field", "center_field", "right_field", 
+  "first_runner", "second_runner", "third_runner", "event_text", 
+  "leadoff_flag", "pinchhit_flag", "defensive_position", "lineup_position", 
+  "event_type", "batter_event_flag", "ab_flag", "hit_value", "SH_flag", 
+  "SF_flag", "outs_on_play", "double_play_flag", "triple_play_flag", 
+  "RBI_on_play", "wild_pitch_flag", "passed_ball_flag", "fielded_by", 
+  "batted_ball_type", "bunt_flag", "foul_flag", "hit_location", "num_errors", 
+  "1st_error_player", "1st_error_type", "2nd_error_player", "2nd_error_type", 
+  "3rd_error_player", "3rd_error_type", "batter_dest", 
+  "runner_on_1st_dest", "runner_on_2nd_dest", "runner_on_3rd_dest", 
+  "play_on_batter", "play_on_runner_on_1st", "play_on_runner_on_2nd", 
+  "play_on_runner_on_3rd", "SB_for_runner_on_1st_flag", 
+  "SB_for_runner_on_2nd_flag", "SB_for_runner_on_3rd_flag", 
+  "CS_for_runner_on_1st_flag", "CS_for_runner_on_2nd_flag", 
+  "CS_for_runner_on_3rd_flag", "PO_for_runner_on_1st_flag", 
+  "PO_for_runner_on_2nd_flag", "PO_for_runner_on_3rd_flag", 
+  "Responsible_pitcher_for_runner_on_1st", 
+  "Responsible_pitcher_for_runner_on_2nd", 
+  "Responsible_pitcher_for_runner_on_3rd", "New_Game_Flag", 
+  "End_Game_Flag", "Pinch_runner_on_1st", "Pinch_runner_on_2nd", 
+  "Pinch_runner_on_3rd", "Runner_removed_for_pinch_runner_on_1st", 
+  "Runner_removed_for_pinch_runner_on_2nd", 
+  "Runner_removed_for_pinch_runner_on_3rd", 
+  "Batter_removed_for_pinch_hitter", 
+  "Position_of_batter_removed_for_pinch_hitter", 
+  "Fielder_with_First_Putout", "Fielder_with_Second_Putout", 
+  "Fielder_with_Third_Putout", "Fielder_with_First_Assist", 
+  "Fielder_with_Second_Assist", "Fielder_with_Third_Assist", 
+  "Fielder_with_Fourth_Assist", "Fielder_with_Fifth_Assist", "event_num"
+)
+```
+
+Dodgers 2010 Season
+```{r}
+dodgers_2010 = read.csv("/Users/rcarino/Documents/Stanford University - Academics/2023-2024 Academic Year/2024 Winter Quarter/STATS 100 Mathematics of Sports/Project/Dodgers Files 2010 - 2023/Dodgers-2010.csv", header = FALSE )
+colnames(dodgers_2010) <- retro_sheet_column_names
+```
+Dodgers 2023 Season
+```{r}
+dodgers_2023 = read.csv("/Users/rcarino/Documents/Stanford University - Academics/2023-2024 Academic Year/2024 Winter Quarter/STATS 100 Mathematics of Sports/Project/Dodgers Files 2010 - 2023/Dodgers-2023.csv", header = FALSE )
+colnames(dodgers_2023) <- retro_sheet_column_names
+total_events = nrow(dodgers_2023)
+```
+
+```{r}
+# Calculate The Total Number of Homeruns
+total_hrs = 0
+for (i in 1:nrow(dodgers_2023)) {
+  if (dodgers_2023$event_type[i] == 23) {
+    total_hrs <- total_hrs + 1
+  }
+}
+total_hrs
+```
+
+Print Number of Total Events: This is basically going to be the denominator
+```{r}
+total_events
+```
+Calculate Transition Probabilities of: From State 1 -> 1, 0 Outs: Homerun
+```{r}
+number_of_outs = 0 
+event_number_homerun = 23 # Specifies a Homerun per the Retrosheet
+runner_on_first = '' # Empty String if No Runners Are Present on this Base
+runner_on_second = ''# Empty String if No Runners Are Present on this Base
+runner_on_third = '' # Empty String if No Runners Are Present on this Base
+```
+
+Set up Variables For Homerun
+
+```{r}
+homerun_0_outs_0_runners = 0
+homerun_1_outs_0_runners = 0
+homerun_2_outs_0_runners = 0
+
+homerun_0_outs_1_runners = 0
+homerun_1_outs_1_runners = 0
+homerun_2_outs_1_runners = 0
+
+homerun_0_outs_2_runners = 0
+homerun_1_outs_2_runners = 0
+homerun_2_outs_2_runners = 0
+
+homerun_0_outs_3_runners = 0
+homerun_1_outs_3_runners = 0
+homerun_2_outs_3_runners = 0
+```
+
+Homerun For 0 Outs, 1 Out, and 2 Outs With No Runners On
+```{r}
+for (i in 1:nrow(dodgers_2023)) {
+  
+  #Proactively Calculate the Number of Runners in This Play
+  num_runners = 0
+  if (dodgers_2023$first_runner != '') {
+    num_runners <- num_runners + 1
+  }
+  if (dodgers_2023$second_runner != '') {
+    num_runners <- num_runners + 1
+  }
+  if (dodgers_2023$third_runner != '') {
+    num_runners <- num_runners + 1
+  }
+  
+  # No Runners on Base - Essentially a Homerun
+  if (dodgers_2023$outs[i] == 0 && dodgers_2023$event_type[i] == 23 
+      && dodgers_2023$first_runner[i] == '' 
+      && dodgers_2023$second_runner[i] == '' 
+      && dodgers_2023$third_runner[i] == '') {
+    homerun_0_outs_0_runners <- homerun_0_outs_0_runners + 1
+  }
+  if (dodgers_2023$outs[i] == 1 && dodgers_2023$event_type[i] == 23
+      && dodgers_2023$first_runner[i] == ""
+      && dodgers_2023$second_runner[i] == ""
+      && dodgers_2023$third_runner[i] == "") {
+    homerun_1_outs_0_runners <- homerun_1_outs_0_runners + 1
+  }
+  if (dodgers_2023$outs[i] == 2 && dodgers_2023$event_type[i] == 23
+    && dodgers_2023$first_runner[i] == ""
+    && dodgers_2023$second_runner[i] == ""
+    && dodgers_2023$third_runner[i] == "") {
+  homerun_2_outs_0_runners <- homerun_2_outs_0_runners + 1
+  }
+  
+  # 1 Runner On Base
+  
+  # 2 Runners on Base
+  
+  # 3 Runners on Base - Essentially a Grandslam
+    if (dodgers_2023$outs[i] == 0 && dodgers_2023$event_type[i] == 23
+    && dodgers_2023$first_runner[i] != ""
+    && dodgers_2023$second_runner[i] != ""
+    && dodgers_2023$third_runner[i] != "") {
+      homerun_0_outs_3_runners <- homerun_0_outs_3_runners + 1
+    }
+  
+    if (dodgers_2023$outs[i] == 1 && dodgers_2023$event_type[i] == 23
+    && dodgers_2023$first_runner[i] != ""
+    && dodgers_2023$second_runner[i] != ""
+    && dodgers_2023$third_runner[i] != "") {
+      homerun_1_outs_3_runners <- homerun_1_outs_3_runners + 1
+    }
+  
+    if (dodgers_2023$outs[i] == 2 && dodgers_2023$event_type[i] == 23
+    && dodgers_2023$first_runner[i] != ""
+    && dodgers_2023$second_runner[i] != ""
+    && dodgers_2023$third_runner[i] != "") {
+      homerun_2_outs_3_runners <- homerun_2_outs_3_runners + 1
+    }
+  
+}
+```
+
+
+```{r}
+print("Homerun with 0 Runners on Base")
+homerun_0_outs_0_runners 
+homerun_1_outs_0_runners
+homerun_2_outs_0_runners
+
+print("Homerun with 1 Runners on Base")
+homerun_0_outs_1_runners
+homerun_1_outs_1_runners
+homerun_2_outs_1_runners
+
+print("Homerun with 2 Runners on Base")
+homerun_0_outs_2_runners
+homerun_1_outs_2_runners
+homerun_2_outs_2_runners
+
+print("Homerun with 3 Runners on Base")
+homerun_0_outs_3_runners
+homerun_1_outs_3_runners
+homerun_2_outs_3_runners
+total_events
+```
+
+Calculate Transition Probabilities of: From State 1 to State 2, 0 Outs: Singe/Walk
+```{r}
+event_number_single = 20
+event_number_walk = 14
+```
+
+Calculate Transition Probabilities of: From State 1 to State 3, 0 Outs: Double
+
+Calculate Transition Probabilities of: From State 1 to State 4, 0 Outs: Triple
+
+Calculate Transition Probabilities of: From State 1 to State 9, 1 Out: Strikeout, Groundout, Flyout
+
+
+
+
+
+
+
